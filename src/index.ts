@@ -21,12 +21,6 @@ const config = {
 	mode: process.env.MCP_MODE ?? 'http',
 };
 
-// Diagnostic: log whether required env vars are set at process start (no secret values printed).
-process.stdout.write(`[whoop-mcp] env check: ` +
-	`WHOOP_CLIENT_ID=${config.clientId ? `set(len=${config.clientId.length})` : 'MISSING'} ` +
-	`WHOOP_CLIENT_SECRET=${config.clientSecret ? `set(len=${config.clientSecret.length})` : 'MISSING'} ` +
-	`WHOOP_REDIRECT_URI=${config.redirectUri}\n`);
-
 const db = new WhoopDatabase(config.dbPath);
 const client = new WhoopClient({
 	clientId: config.clientId,
@@ -367,15 +361,7 @@ async function main(): Promise<void> {
 		});
 
 		app.get('/health', (_req: Request, res: Response) => {
-			res.json({
-				status: 'ok',
-				authenticated: Boolean(db.getTokens()),
-				env: {
-					WHOOP_CLIENT_ID: config.clientId ? `set(len=${config.clientId.length})` : 'MISSING',
-					WHOOP_CLIENT_SECRET: config.clientSecret ? `set(len=${config.clientSecret.length})` : 'MISSING',
-					WHOOP_REDIRECT_URI: config.redirectUri,
-				},
-			});
+			res.json({ status: 'ok', authenticated: Boolean(db.getTokens()) });
 		});
 
 		app.all('/mcp', async (req: Request, res: Response) => {
